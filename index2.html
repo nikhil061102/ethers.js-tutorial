@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <button id="myButton">Toggle for all accounts</button>
+    <div id="myContainer"></div>
+</body>
+<script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js" type="application/javascript"></script>
+<script type="module">
+    const button = document.getElementById('myButton');
+    const container = document.getElementById('myContainer');
+    let isDisplayed = false;
+
+    button.addEventListener('click', async () => {
+        const provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:7545');
+        const accounts = await provider.listAccounts();
+
+        while (container.firstChild) {
+            container.removeChild(container.firstChild);
+        }
+
+        if (isDisplayed) {
+            isDisplayed = false;
+        } else {
+            const balancePromises = accounts.map(async (account) => {
+                const balance = await provider.getBalance(account);
+                return balance;
+            });
+
+            const balances = await Promise.all(balancePromises);
+
+            balances.forEach((balance, index) => {
+                const div = document.createElement('h3');
+                div.textContent = `Account: ${accounts[index]}, ETH Balance: ${ethers.utils.formatEther(balance)}`;
+                container.appendChild(div);
+            });
+
+            isDisplayed = true;
+        }
+    });
+</script>
+</html>
